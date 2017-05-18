@@ -8,7 +8,7 @@ Takes a list of return delimited email addresses and moves them to a different t
 4. Open the JSON key file and copy the `client_id`.
 5. Return to the Admin Console and navigate to "Security" > "Show More" > "Advanced Settings" > "Manage API client access"
 6. Paste the `client_id` that you copied in the "Client Name" box.
-7. Paste the following "API Scopes" `https://www.googleapis.com/auth/admin.directory.group, https://www.googleapis.com/auth/admin.directory.user` in the box labeled "One or More API Scopes".
+7. Paste the following "API Scopes" `https://www.googleapis.com/auth/admin.directory.user` in the box labeled "One or More API Scopes".
 8. Click Authorize.
 
 ## Installation
