@@ -1,0 +1,11 @@
+super_admin_email: im_the_admin@domain.tld
+key_file_path: key.json
+log_path: /var/log/DomainManager
+domain_source_map:
+  -
+    members: members1.txt
+    destination: sub1.domain.tld
+  -
+    members: members2.txt
+    destination: sub2.domain.tld
+  # add more domain file pairs as needed
