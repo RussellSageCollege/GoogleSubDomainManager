@@ -4,10 +4,12 @@ Takes a list of return delimited email addresses and moves them to a different t
 
 1. Create a new "Super Admin" account in google.
 2. Create new project in the API console.
-3. Create a new service account with `Enable Google Apps Damian-wide Delegation` and `Furnish a new private key` enabled.
-4. Open the JSON key file and copy the `client_id`.
+3. Create a new service account with the following settingd enabled.
+    * `Enable Google Apps Damian-wide Delegation`
+    * `Furnish a new private key`
+4. Open the JSON key file with a text editor and copy the `client_id` value.
 5. Return to the Admin Console and navigate to "Security" > "Show More" > "Advanced Settings" > "Manage API client access"
-6. Paste the `client_id` that you copied in the "Client Name" box.
+6. Paste the `client_id` value that you copied in the "Client Name" box.
 7. Paste the following "API Scopes" in the box labeled "One or More API Scopes".
     * `https://www.googleapis.com/auth/admin.directory.user`
     * `https://www.googleapis.com/auth/admin.directory.user.alias`
@@ -35,6 +37,9 @@ The following options must be configured in the YAML config file.
 * `key_file_path` - The private key file supplied to you from Google when you create your service account.
 * `log_path` - The path to store log files.
 * `domain_source_map` - Array of objects containing member files paired with a target domain.
+    * `members` - A path to a text file with a return deliminated list of emails.
+    * `destination` - A string that defines the target sub-domain for this mapping.
+    * `alias_previous` - A boolean that will determine if members of this sub-domain should have their previous emails aliased to their new one.
 
 Make the script executable:
 
@@ -47,3 +52,15 @@ chmod +x DomainManager.py
 ```
 ./DomainManager.py
 ```
+
+## Updating
+
+```
+cd /path/to/GoogleSubDomainManager
+# Checkout to the latest tag
+git checkout $(git describe --tags $(git rev-list --tags --max-count=1))
+# Install python requirements
+sudo pip install -r requirements.txt
+```
+
+Then compare the differences from `config.example.yml` to your customized `config.yml`. Add any new options from  `config.example.yml` to your `config.yml`.
