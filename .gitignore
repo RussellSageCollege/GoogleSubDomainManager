@@ -165,5 +165,6 @@ Temporary Items
 .apdisk
 /config.yml
 /key.json
-/dev.txt
+*.txt
 log/*.log
+/alias_store.json
