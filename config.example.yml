@@ -1,15 +1,39 @@
-super_admin_email: im_the_admin@domain.tld
-key_file_path: key.json
 log_path: /var/log/DomainManager
+alias_store_path: alias_store/store.json
+google:
+  super_admin_email: im_the_admin@domain.tld
+  key_file_path: key.json
+ldap:
+  enabled: false # Disables all LDAP actions
+  tree_base: DC=EXAMPLE,DC=COM
+  servers:
+    -
+      host_or_ip: dc1.example.com
+      port: 636
+      ldaps: true
+    -
+      host_or_ip: 127.0.0.1
+      port: 389
+      ldaps: false
+    # Add more if needed
+  bind_user:
+    principal_name: user@example.com
+    password: StrongPassword
 domain_source_map:
   -
     members: members1.txt
-    destination: sub1.domain.tld
-    destination_org: /subs/sub1
+    destination:
+      domain: sub1.domain.tld
+      google_org: /subs/sub1
+      ldap_org_dn: OU=sub1,DC=EXAMPLE,DC=COM
+    ldap_disable_accounts: true
     include_in_global_address_list: true
   -
     members: members2.txt
-    destination: sub2.domain.tld
-    destination_org: /subs/sub2
+    destination:
+      domain: sub2.domain.tld
+      google_org: false # If user's should remain in their current ORG set to false
+      ldap_org_dn: false # If user's should remain in their current OU set to false
+    ldap_disable_accounts: false # Accounts in this map will be disabled in LDAP if enabled
     include_in_global_address_list: false
-  # add more domain file pairs as needed
+  # Add more if needed

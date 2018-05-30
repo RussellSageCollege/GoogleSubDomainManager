@@ -1,0 +1,145 @@
+#! /usr/bin/env python
+import click
+from includes.helpers import read_config, get_members_from_input_file, form_new_address, get_date
+from includes.Logger import Logger
+from includes.AliasStore import AliasStore
+from includes.GoogleManager import GoogleManager
+from includes.LdapManager import LdapManager
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command('migrate::accounts')
+@click.option('--debug', is_flag=True, help='Enable debug output')
+def migrate_accounts(debug):
+    #
+    # Initialize classes
+    #
+    if debug:
+        click.echo('[DEBUG][CLI] Reading configuration...')
+    # Read in the configuration
+    config = read_config()
+    # Init the logging component
+    logger = Logger(config['log_path'])
+    if debug:
+        logger.log_debug('Configuration loaded and Logger initialized!', 'CLI')
+        logger.log_debug('Reading Alias Store...', 'CLI')
+    # Init Alias Store class
+    alias_store = AliasStore(config['alias_store_path'])
+    if debug:
+        logger.log_debug('Alias Store initialized!', 'CLI')
+        logger.log_debug('Initializing Google Manager...', 'CLI')
+    # Init Google Manager class
+    google = GoogleManager(config['google'], logger)
+    if debug:
+        logger.log_debug('Google Manager initialized!', 'CLI')
+    if config['ldap']['enabled']:
+        if debug:
+            logger.log_debug('Initializing Ldap Manager...', 'CLI')
+        ldap_manager = LdapManager(config['ldap'], logger)
+        if debug:
+            logger.log_debug('Ldap Manager initialized!', 'CLI')
+
+    # @todo initialize LDAP if needed
+
+    #
+    # Begin migrating accounts
+    #
+    logger.log_info('Migrating accounts...', 'CLI')
+    for mapping in config['domain_source_map']:
+        #
+        # Some vars to make everything easier to read
+        #
+        global_address_book = mapping['include_in_global_address_list']
+        goole_org = mapping['destination']['google_org']
+        ldap_ou = mapping['destination']['ldap_org_dn']
+        ldap_disable_accounts = mapping['ldap_disable_accounts']
+        if debug:
+            logger.log_debug('Gathering list of members from: ' + mapping['members'] + '...', 'CLI')
+        members = get_members_from_input_file(mapping['members'])
+        for member in members:
+            new_address = form_new_address(member, mapping['destination']['domain'])
+            if debug:
+                logger.log_debug('Migrating: ' + member + ' ---> ' + new_address, 'CLI')
+            states = google.move_account(member, new_address, goole_org, global_address_book)
+            if states:
+                if config['ldap']['enabled']:
+                    logger.log_info('Moving: ' + member + ' ---> ' + ldap_ou + ' in LDAP', 'CLI')
+                    ldap_manager.move_user(member, ldap_ou, ldap_disable_accounts)
+                    logger.log_info('Moved: ' + member + ' ---> ' + ldap_ou + ' in LDAP', 'CLI')
+                entry = {
+                    'address': {
+                        'old': states['previous']['primaryEmail'],
+                        'now': states['current']['primaryEmail']
+                    },
+                    'org': {
+                        'old': states['previous']['orgUnitPath'],
+                        'now': states['current']['orgUnitPath']
+                    },
+                    'in_global_address_list': {
+                        'old': states['previous']['includeInGlobalAddressList'],
+                        'now': states['current']['includeInGlobalAddressList']
+                    },
+                    'date': get_date()
+                }
+                if debug:
+                    logger.log_debug('Storing the states of: ' + member + ' -- ' + new_address, 'CLI')
+                alias_store.append_entry(entry)
+                if debug:
+                    logger.log_debug('States of: ' + member + ' -- ' + new_address + ' have been stored!', 'CLI')
+            else:
+                logger.log_error('We\'ve encountered an error... exiting!', 'CLI')
+                exit(2)
+
+
+@cli.command('purge::aliases')
+@click.option('--debug', is_flag=True, help='Enable debug output')
+def purge_aliases(debug):
+    #
+    # Initialize classes
+    #
+    if debug:
+        click.echo('[DEBUG][CLI] Reading configuration...')
+    # Read in the configuration
+    config = read_config()
+    # Init the logging component
+    logger = Logger(config['log_path'])
+    if debug:
+        logger.log_debug('Configuration loaded and Logger initialized!', 'CLI')
+        logger.log_debug('Reading Alias Store...', 'CLI')
+    # Init Alias Store class
+    alias_store = AliasStore(config['alias_store_path'])
+    if debug:
+        logger.log_debug('Alias Store initialized!', 'CLI')
+        logger.log_debug('Initializing Google Manager...', 'CLI')
+    # Init Google Manager class
+    google = GoogleManager(config['google'], logger)
+    if debug:
+        logger.log_debug('Google Manager initialized!', 'CLI')
+
+    #
+    # Begin removing aliases
+    #
+    logger.log_info('Purging aliases...', 'CLI')
+    for index, entry in enumerate(alias_store.store):
+        member = entry['address']['now']
+        alias = entry['address']['old']
+        if debug:
+            logger.log_debug('Purging: ' + alias + ' ---> ' + member, 'CLI')
+        result = google.remove_alias(member, alias)
+        if result:
+            if debug:
+                logger.log_debug('Syncing the alias store...', 'CLI')
+            alias_store.pop_entry(index)
+            if debug:
+                logger.log_debug('Alias store synced!', 'CLI')
+        else:
+            logger.log_error('We\'ve encountered an error... exiting!', 'CLI')
+            exit(3)
+
+
+if __name__ == '__main__':
+    cli()

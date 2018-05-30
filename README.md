@@ -31,22 +31,11 @@ cp config.example.yml config.yml
 vi config.yml
 ```
 
-The following options must be configured in the YAML config file.
-
-* `super_admin_email` - An email address that is a super administrator on your Google Apps domain.
-* `key_file_path` - The private key file supplied to you from Google when you create your service account.
-* `log_path` - The path to store log files.
-* `domain_source_map` - Array of objects containing member files paired with a target domain.
-    * `members` - A path to a text file with a return deliminated list of emails.
-    * `destination` - A string that defines the target sub-domain for this mapping.
-    * `destination_org` - A string that defines the org unit that the account should be moved to.
-    * `include_in_global_address_list` - A bool that determines if the accounts of that sub-domain should be shown in the global address directory.
 
 Make the script executable:
 
 ```shell
-chmod +x MigrateAccount.py
-chmod +x RemoveAlias.py
+chmod +x domain-manager
 ```
 
 ## Updating
