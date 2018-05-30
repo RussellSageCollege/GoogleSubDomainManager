@@ -74,7 +74,7 @@ class LdapManager(object):
         disable_account_action = self.form_set_account_control_action('514')
         result = self.modify_object(dn, disable_account_action)
         if result:
-            self.logger.log_error('LDAP account disabled.', self.log_tag)
+            self.logger.log_info('LDAP account disabled.', self.log_tag)
             return result
         else:
             self.logger.log_error('Error performing LDAP disable account.', self.log_tag)
@@ -89,10 +89,10 @@ class LdapManager(object):
                 new_dn = 'cn=' + cn + ',' + ldap_org_dn
                 if ldap_disable_accounts:
                     self.connection.rename_s(dn, 'cn=' + cn, ldap_org_dn)
-                    self.logger.log_error('LDAP account moved to: ' + ldap_org_dn, self.log_tag)
+                    self.logger.log_info('LDAP account moved to: ' + ldap_org_dn, self.log_tag)
                     self.disable_account(new_dn)
                 else:
-                    self.logger.log_error('LDAP account moved to: ' + ldap_org_dn, self.log_tag)
+                    self.logger.log_info('LDAP account moved to: ' + ldap_org_dn, self.log_tag)
                     self.connection.rename_s(dn, 'cn=' + cn, ldap_org_dn)
                 return {'current': new_dn, 'previous': dn}
             else:
