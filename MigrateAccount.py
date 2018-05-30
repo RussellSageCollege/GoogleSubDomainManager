@@ -92,12 +92,14 @@ class MigrateAccount:
         """
         return [line.rstrip('\n').strip('"').lower() for line in open(mapping['members'])]
 
-    def execute_users_service_action(self, member, new_address, org_unit_path, users_service, log):
+    def execute_users_service_action(self, member, new_address, org_unit_path, include_in_global_address_list,
+                                     users_service, log):
         """
         Patch the user's google account by setting their primary email to the new address and changing their org unit
         :param member:
         :param new_address:
         :param org_unit_path:
+        :param include_in_global_address_list:
         :param users_service:
         :param log:
         :return: bool
@@ -108,8 +110,14 @@ class MigrateAccount:
             # Get the old org unit
             old_org = user['orgUnitPath']
             # Patch the user's account and change their email and their org unit
-            users_service.patch(userKey=member,
-                                body={'primaryEmail': new_address, 'orgUnitPath': org_unit_path}).execute()
+            users_service.patch(
+                userKey=member,
+                body={
+                    'primaryEmail': new_address,
+                    'orgUnitPath': org_unit_path,
+                    'includeInGlobalAddressList': include_in_global_address_list
+                }
+            ).execute()
             # Build the info string
             info = 'Moved: ' + old_org + '/' + member + ' ---> ' + org_unit_path + '/' + new_address
             # Log the information to our file
@@ -153,7 +161,8 @@ class MigrateAccount:
             # form the new address
             new_address = self.form_new_address(member, mapping['destination'])
             # Move the address to the newly formed address
-            self.execute_users_service_action(member, new_address, mapping['destination_org'], users_service, logging)
+            self.execute_users_service_action(member, new_address, mapping['destination_org'],
+                                              mapping['include_in_global_address_list'], users_service, logging)
 
     def main(self):
         """

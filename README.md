@@ -39,7 +39,8 @@ The following options must be configured in the YAML config file.
 * `domain_source_map` - Array of objects containing member files paired with a target domain.
     * `members` - A path to a text file with a return deliminated list of emails.
     * `destination` - A string that defines the target sub-domain for this mapping.
-    * `destination_org` - A string that defines the org unit that the account should be moved to. 
+    * `destination_org` - A string that defines the org unit that the account should be moved to.
+    * `include_in_global_address_list` - A bool that determines if the accounts of that sub-domain should be shown in the global address directory.
 
 Make the script executable:
 

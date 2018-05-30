@@ -6,8 +6,10 @@ domain_source_map:
     members: members1.txt
     destination: sub1.domain.tld
     destination_org: /subs/sub1
+    include_in_global_address_list: true
   -
     members: members2.txt
     destination: sub2.domain.tld
     destination_org: /subs/sub2
+    include_in_global_address_list: false
   # add more domain file pairs as needed
