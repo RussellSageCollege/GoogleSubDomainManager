@@ -5,9 +5,9 @@ domain_source_map:
   -
     members: members1.txt
     destination: sub1.domain.tld
-    alias_previous: false
+    destination_org: /subs/sub1
   -
     members: members2.txt
     destination: sub2.domain.tld
-    alias_previous: true
+    destination_org: /subs/sub2
   # add more domain file pairs as needed
