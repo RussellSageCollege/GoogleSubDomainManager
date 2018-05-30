@@ -61,27 +61,28 @@ def migrate_accounts(debug):
             new_address = form_new_address(member, mapping['destination']['domain'])
             if debug:
                 logger.log_debug('Migrating: ' + member + ' ---> ' + new_address, 'CLI')
-            states = google.move_account(member, new_address, goole_org, global_address_book)
-            if states:
-                if config['ldap']['enabled']:
-                    logger.log_info('Moving: ' + member + ' ---> ' + ldap_ou + ' in LDAP', 'CLI')
-                    ldap_manager.move_user(member, ldap_ou, ldap_disable_accounts)
-                    logger.log_info('Moved: ' + member + ' ---> ' + ldap_ou + ' in LDAP', 'CLI')
+            google_states = google.move_account(member, new_address, goole_org, global_address_book)
+            if google_states:
                 entry = {
                     'address': {
-                        'old': states['previous']['primaryEmail'],
-                        'now': states['current']['primaryEmail']
+                        'old': google_states['previous']['primaryEmail'],
+                        'now': google_states['current']['primaryEmail']
                     },
                     'org': {
-                        'old': states['previous']['orgUnitPath'],
-                        'now': states['current']['orgUnitPath']
+                        'old': google_states['previous']['orgUnitPath'],
+                        'now': google_states['current']['orgUnitPath']
                     },
                     'in_global_address_list': {
-                        'old': states['previous']['includeInGlobalAddressList'],
-                        'now': states['current']['includeInGlobalAddressList']
+                        'old': google_states['previous']['includeInGlobalAddressList'],
+                        'now': google_states['current']['includeInGlobalAddressList']
                     },
                     'date': get_date()
                 }
+                if config['ldap']['enabled']:
+                    logger.log_info('Moving: ' + member + ' ---> ' + ldap_ou + ' in LDAP', 'CLI')
+                    ldap_states = ldap_manager.move_user(member, ldap_ou, ldap_disable_accounts)
+                    logger.log_info('Moved: ' + member + ' ---> ' + ldap_ou + ' in LDAP', 'CLI')
+                    entry['dn'] = {'old': ldap_states['previous'], 'now': ldap_states['current']}
                 if debug:
                     logger.log_debug('Storing the states of: ' + member + ' -- ' + new_address, 'CLI')
                 alias_store.append_entry(entry)

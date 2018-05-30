@@ -86,15 +86,15 @@ class LdapManager(object):
             if user:
                 cn = user[0][1]['cn'][0]
                 dn = user[0][0]
+                new_dn = 'cn=' + cn + ',' + ldap_org_dn
                 if ldap_disable_accounts:
                     self.connection.rename_s(dn, 'cn=' + cn, ldap_org_dn)
-                    new_dn = 'cn=' + cn + ',' + ldap_org_dn
                     self.logger.log_error('LDAP account moved to: ' + ldap_org_dn, self.log_tag)
-                    return self.disable_account(new_dn)
+                    self.disable_account(new_dn)
                 else:
                     self.logger.log_error('LDAP account moved to: ' + ldap_org_dn, self.log_tag)
-                    return self.connection.rename_s(dn, 'cn=' + cn, ldap_org_dn)
-
+                    self.connection.rename_s(dn, 'cn=' + cn, ldap_org_dn)
+                return {'current': new_dn, 'previous': dn}
             else:
                 self.logger.log_error('Error performing LDAP user move.', self.log_tag)
                 return False
