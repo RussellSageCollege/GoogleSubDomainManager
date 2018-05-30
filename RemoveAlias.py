@@ -38,7 +38,7 @@ class RemoveAlias:
     def read_aliases():
         """
         Reads aliases from the JSON file
-        :return: object
+        :return: list
         """
         if os.path.isfile('alias_store.json'):
             with open('alias_store.json', 'r') as json_data:
@@ -48,7 +48,7 @@ class RemoveAlias:
 
     def sync_alias_store(self, index):
         """
-        Syncs the alias store array and JSON file
+        Syncs the alias store array and JSON file by removing the index passed in from the ALIAS_STORE array and then writes the new contents as a JSON file.
         :param entry:
         :return:
         """
@@ -90,6 +90,7 @@ class RemoveAlias:
             aliases_service.delete(userKey=member, alias=alias).execute()
             log.info('Removed: ' + alias + ' ---x ' + member)
             print('Removed: ' + alias + ' ---x ' + member)
+            # Sync the state of the alias store
             self.sync_alias_store(index)
             return True
         except Exception as e:
@@ -99,7 +100,7 @@ class RemoveAlias:
 
     def remove_alias(self):
         """
-        Removes the alias from an email
+        Removes the aliases based on the alias store
         :return: void
         """
         # Set up logging
@@ -132,6 +133,7 @@ class RemoveAlias:
         print('Building service...')
         # Build the Google directory service
         self.SERVICE = self.build_service()
+        # Removes aliases based on the alias store JSON file that was read into an arry
         self.remove_alias()
 
 
