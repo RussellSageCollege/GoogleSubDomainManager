@@ -42,9 +42,6 @@ def migrate_accounts(debug):
         ldap_manager = LdapManager(config['ldap'], logger)
         if debug:
             logger.log_debug('Ldap Manager initialized!', 'CLI')
-
-    # @todo initialize LDAP if needed
-
     #
     # Begin migrating accounts
     #
