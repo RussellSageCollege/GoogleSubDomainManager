@@ -77,6 +77,20 @@ class GoogleManager(object):
             self.logger.log_error('Account move failure ' + member + ' ' + str(e), self.log_tag)
             return False
 
+    def enable_account(self, member):
+        body = {'suspended': False}
+        try:
+            account = self.user_service.get(userKey=member).execute()
+            if account.suspended:
+                self.user_service.patch(
+                    userKey=member,
+                    body=body
+                ).execute()
+            return True
+        except Exception as e:
+            self.logger.log_error('Account enable failure ' + member + ' ' + str(e), self.log_tag)
+            return False
+
     def remove_alias(self, member, alias):
         """
         :param member: str

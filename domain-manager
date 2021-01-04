@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 import click
 from includes.helpers import read_config, get_members_from_input_file, form_new_address, get_date
 from includes.Logger import Logger
@@ -11,6 +11,36 @@ from includes.LdapManager import LdapManager
 def cli():
     pass
 
+
+@cli.command('enable::accounts::google')
+@click.option('--debug', is_flag=True, help='Enable debug output')
+def enable_accounts_google(debug):
+    #
+    # Initialize classes
+    #
+    if debug:
+        click.echo('[DEBUG][CLI] Reading configuration...')
+    # Read in the configuration
+    config = read_config()
+    # Init the logging component
+    logger = Logger(config['log_path'])
+    if debug:
+        logger.log_debug('Configuration loaded and Logger initialized!', 'CLI')
+        logger.log_debug('Initializing Google Manager...', 'CLI')
+    # Init Google Manager class
+    google = GoogleManager(config['google'], logger)
+    if debug:
+        logger.log_debug('Google Manager initialized!', 'CLI')
+    #
+    # Begin migrating accounts
+    #
+    logger.log_info('Enabling accounts...', 'CLI')
+    for mapping in config['domain_source_map']:
+        if debug:
+            logger.log_debug('Gathering list of members from: ' + mapping['members'] + '...', 'CLI')
+        members = get_members_from_input_file(mapping['members'])
+        for member in members:
+            google.enable_account(member)
 
 @cli.command('migrate::accounts')
 @click.option('--debug', is_flag=True, help='Enable debug output')
