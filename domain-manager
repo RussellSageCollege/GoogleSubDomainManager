@@ -42,6 +42,7 @@ def enable_accounts_google(debug):
         for member in members:
             google.enable_account(member)
 
+
 @cli.command('migrate::accounts')
 @click.option('--debug', is_flag=True, help='Enable debug output')
 def migrate_accounts(debug):
@@ -112,7 +113,12 @@ def migrate_accounts(debug):
                     logger.log_info('Moving: ' + member + ' ---> ' + ldap_ou + ' in LDAP', 'CLI')
                     ldap_states = ldap_manager.move_user(member, ldap_ou, ldap_disable_accounts)
                     logger.log_info('Moved: ' + member + ' ---> ' + ldap_ou + ' in LDAP', 'CLI')
-                    entry['dn'] = {'old': ldap_states['previous'], 'now': ldap_states['current']}
+                    if ldap_states:
+                        entry['dn'] = {'old': ldap_states['previous'], 'now': ldap_states['current']}
+                    else:
+                        logger.log_warn(
+                            'LDAP state could not be determined, the acct has likely been pruned by another system.',
+                            'LDAP')
                 if debug:
                     logger.log_debug('Storing the states of: ' + member + ' -- ' + new_address, 'CLI')
                 alias_store.append_entry(entry)
